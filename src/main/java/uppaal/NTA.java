@@ -16,9 +16,13 @@ import org.jdom.input.JDOMParseException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 public class NTA extends UppaalElement{
+	private static final Logger logger = LoggerFactory.getLogger(NTA.class);
+
 	private Declaration declarations = new Declaration();
 	private SystemDeclaration systemDeclaration = new SystemDeclaration();
 	
@@ -48,7 +52,7 @@ public class NTA extends UppaalElement{
 //		}
 //	}
 	
-	public NTA(String uppaalFile){
+	public NTA(String uppaalFile) throws UppaalException {
 		SAXBuilder builder = new SAXBuilder();
 		try {
 			Document uppaalDoc = builder.build(uppaalFile);
@@ -57,7 +61,9 @@ public class NTA extends UppaalElement{
 			while (i.hasNext()) {
 				Element child = i.next();
 				if (child.getName().equals("declaration")) {
-					assert child.getContent().size() == 1 : "Declaration elements should not have children";
+					if (child.getContent().size() != 1) {
+						throw new UppaalException("Declaration elements should not have children");
+					}
 					declarations = new Declaration(child);
 				} else if (child.getName().equals("template")) {
 					Automaton automaton = new Automaton(child);
@@ -65,15 +71,13 @@ public class NTA extends UppaalElement{
 				} else if (child.getName().equals("system")) {
 					systemDeclaration = new SystemDeclaration(child);
 				} else {
-					System.err.println("unhandled element: "+child.getName());
+					logger.warn("unhandled element: {}", child.getName());
 				}
 			}
 		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new UppaalException(e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new UppaalException(e);
 		}
 	}
 

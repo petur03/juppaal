@@ -12,6 +12,8 @@ import java.util.regex.Pattern;
 
 import org.jdom.Element;
 import org.jdom.filter.ElementFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import uppaal.labels.Comment;
 import uppaal.labels.Guard;
@@ -19,6 +21,8 @@ import uppaal.labels.Select;
 import uppaal.labels.Update;
 
 public class Automaton implements Comparable<Automaton>{
+	private static final Logger logger = LoggerFactory.getLogger(Automaton.class);
+
 	private static final Pattern locationIdRegExPattern = Pattern.compile("\\d+");
 	
 	private Name name;
@@ -49,7 +53,7 @@ public class Automaton implements Comparable<Automaton>{
 	}
 	
 	Map<String, Location> id_locationMap = new HashMap<String,Location>();	
-	public Automaton(Element automatonElement) {
+	public Automaton(Element automatonElement) throws UppaalException {
 		this(automatonElement.getChildText("name"));
 		if(automatonElement.getChild("declaration") != null)
 			declaration = new Declaration(automatonElement.getChild("declaration"));
@@ -67,7 +71,7 @@ public class Automaton implements Comparable<Automaton>{
 				id_locationMap.put(location.getUniqueIdString(), location);
 			}
 		} catch (ClassCastException e){
-			e.printStackTrace();
+			throw new UppaalException(e);
 		}
 		try{
 			@SuppressWarnings("unchecked")
@@ -79,7 +83,7 @@ public class Automaton implements Comparable<Automaton>{
 				addTransition(transition);
 			}
 		} catch (ClassCastException e){
-			e.printStackTrace();
+			throw new UppaalException(e);
 		}
 		
 		Element initElement =automatonElement.getChild("init");
@@ -165,10 +169,10 @@ public class Automaton implements Comparable<Automaton>{
 
 	public Location getInit() {
 		if(this.init== null){
-			System.err.println("initial location not set for automaton " + this.getName().getName());
+			logger.warn("initial location not set for automaton " + this.getName().getName());
 			if(locations.size() > 0){
 				init = locations.get(0);
-				System.err.println("setting initial location");
+				logger.warn("setting initial location");
 			}
 		}
 

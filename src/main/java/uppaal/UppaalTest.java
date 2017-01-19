@@ -26,7 +26,7 @@ public class UppaalTest {
 	}
 	
 	
-	public void getProduct(){
+	public void getProduct() throws UppaalException{
 		NTA nta = new NTA("/tmp/testAut.xml");
 		System.out.println("Loaded");
 		Automaton spec = nta.getAutomaton("P0");
@@ -130,7 +130,11 @@ public class UppaalTest {
 //		System.out.println("written");
 		UppaalTest t = new UppaalTest();
 
-		t.getProduct();
+		try {
+			t.getProduct();
+		} catch (UppaalException e) {
+			e.printStackTrace();
+		}
 		
 		System.out.println("done");
 		// product construction
